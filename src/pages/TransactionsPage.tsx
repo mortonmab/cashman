@@ -19,8 +19,8 @@ export function TransactionsPage() {
       const data = await transactionsService.getAll();
       setTransactions(data);
     } catch (error) {
+      console.error('Load transactions error:', error);
       toast.error('Failed to load transactions');
-      console.error('Error loading transactions:', error);
     } finally {
       setLoading(false);
     }
@@ -28,12 +28,14 @@ export function TransactionsPage() {
 
   const handleSubmit = async (transactionData: Omit<Transaction, 'id' | 'status'>) => {
     try {
+      console.log('Submitting transaction data:', transactionData);
       const newTransaction = await transactionsService.create(transactionData);
+      console.log('Transaction created:', newTransaction);
       setTransactions(prev => [newTransaction, ...prev]);
       toast.success('Transaction recorded successfully');
     } catch (error) {
-      toast.error('Failed to record transaction');
-      console.error('Error creating transaction:', error);
+      console.error('Create transaction error:', error);
+      toast.error(`Failed to record transaction: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 

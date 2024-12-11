@@ -9,7 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -48,6 +47,19 @@ export function TransactionList({ transactions }: TransactionListProps) {
   const totalPages = Math.ceil(filteredTransactions.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const paginatedTransactions = filteredTransactions.slice(startIndex, startIndex + pageSize);
+
+  // Calculate running balance for each transaction
+  let runningBalance = 0;
+  const transactionsWithBalance = paginatedTransactions.map((transaction, index) => {
+    if (index === 0) {
+      // Calculate initial balance from all previous transactions
+      runningBalance = filteredTransactions
+        .slice(0, startIndex)
+        .reduce((sum, t) => sum + (t.type === 'inflow' ? t.amount : -t.amount), 0);
+    }
+    runningBalance += transaction.type === 'inflow' ? transaction.amount : -transaction.amount;
+    return { ...transaction, balance: runningBalance };
+  });
 
   // Generate page numbers for pagination
   const pageNumbers = [];
@@ -91,36 +103,31 @@ export function TransactionList({ transactions }: TransactionListProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Time</TableHead>
-              <TableHead>Type</TableHead>
               <TableHead>Reference</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Deposits</TableHead>
+              <TableHead className="text-right">Payments</TableHead>
+              <TableHead className="text-right">Balance</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedTransactions.map((transaction) => (
+            {transactionsWithBalance.map((transaction) => (
               <TableRow key={transaction.id}>
                 <TableCell>{new Date(transaction.timestamp).toLocaleTimeString()}</TableCell>
-                <TableCell>
-                  <Badge variant={transaction.type === 'inflow' ? 'default' : 'destructive'}>
-                    {transaction.type === 'inflow' ? 'Cash In' : 'Cash Out'}
-                  </Badge>
-                </TableCell>
                 <TableCell>{transaction.referenceNumber}</TableCell>
                 <TableCell>{transaction.description}</TableCell>
                 <TableCell>{transaction.category}</TableCell>
-                <TableCell className="text-right font-medium">
-                  {formatCurrency(transaction.amount)}
+                <TableCell className="text-right">
+                  {transaction.type === 'inflow' ? formatCurrency(transaction.amount) : '-'}
                 </TableCell>
-                <TableCell>
-                  <Badge variant={
-                    transaction.status === 'approved' ? 'default' :
-                    transaction.status === 'rejected' ? 'destructive' : 'secondary'
-                  }>
-                    {transaction.status}
-                  </Badge>
+                <TableCell className="text-right">
+                  {transaction.type === 'outflow' ? formatCurrency(transaction.amount) : '-'}
+                </TableCell>
+                <TableCell className={`text-right font-medium ${
+                  transaction.balance >= 0 ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {formatCurrency(transaction.balance)}
                 </TableCell>
               </TableRow>
             ))}

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Transaction } from '@/types';
+import { generateReferenceNumber } from '@/lib/utils';
 
 interface TransactionFormProps {
   onSubmit: (transaction: Omit<Transaction, 'id' | 'status'>) => void;
@@ -20,8 +21,8 @@ export function TransactionForm({ onSubmit }: TransactionFormProps) {
     const transaction = {
       type,
       amount: Number(formData.get('amount')),
-      timestamp: new Date().toISOString(),
-      referenceNumber: formData.get('referenceNumber') as string,
+      timestamp: new Date().toISOString(), // Current timestamp
+      referenceNumber: generateReferenceNumber(), // Generate unique reference
       description: formData.get('description') as string,
       source: type === 'inflow' ? formData.get('source') as string : undefined,
       recipient: type === 'outflow' ? formData.get('recipient') as string : undefined,
@@ -30,6 +31,7 @@ export function TransactionForm({ onSubmit }: TransactionFormProps) {
 
     onSubmit(transaction);
     e.currentTarget.reset();
+    setType('inflow'); // Reset type after submission
   };
 
   return (
@@ -55,18 +57,9 @@ export function TransactionForm({ onSubmit }: TransactionFormProps) {
             name="amount"
             type="number"
             step="0.01"
+            min="0"
             required
             placeholder="Enter amount"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="referenceNumber">Reference Number</Label>
-          <Input
-            id="referenceNumber"
-            name="referenceNumber"
-            required
-            placeholder="Enter reference number"
           />
         </div>
 
