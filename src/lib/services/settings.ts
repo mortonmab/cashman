@@ -12,6 +12,10 @@ export interface OrganizationSettings {
   email: string;
   currency: string;
   defaultPageSize: number;
+  language: string;
+  timezone: string;
+  dateFormat: string;
+  timeFormat: string;
 }
 
 const SETTINGS_DOC_ID = 'organization';

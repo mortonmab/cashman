@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Transaction } from '@/types';
 import { formatCurrency } from '@/lib/utils';
+import { TransactionDetailsModal } from './TransactionDetailsModal';
 import {
   Table,
   TableBody,
@@ -35,6 +36,8 @@ export function TransactionList({ transactions }: TransactionListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   // Filter transactions based on search term
   const filteredTransactions = transactions.filter(transaction => 
@@ -52,7 +55,6 @@ export function TransactionList({ transactions }: TransactionListProps) {
   let runningBalance = 0;
   const transactionsWithBalance = paginatedTransactions.map((transaction, index) => {
     if (index === 0) {
-      // Calculate initial balance from all previous transactions
       runningBalance = filteredTransactions
         .slice(0, startIndex)
         .reduce((sum, t) => sum + (t.type === 'inflow' ? t.amount : -t.amount), 0);
@@ -66,6 +68,11 @@ export function TransactionList({ transactions }: TransactionListProps) {
   for (let i = 1; i <= totalPages; i++) {
     pageNumbers.push(i);
   }
+
+  const handleRowClick = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    setModalOpen(true);
+  };
 
   return (
     <div className="space-y-4">
@@ -113,7 +120,11 @@ export function TransactionList({ transactions }: TransactionListProps) {
           </TableHeader>
           <TableBody>
             {transactionsWithBalance.map((transaction) => (
-              <TableRow key={transaction.id}>
+              <TableRow 
+                key={transaction.id}
+                onClick={() => handleRowClick(transaction)}
+                className="cursor-pointer hover:bg-muted/50"
+              >
                 <TableCell>{new Date(transaction.timestamp).toLocaleTimeString()}</TableCell>
                 <TableCell>{transaction.referenceNumber}</TableCell>
                 <TableCell>{transaction.description}</TableCell>
@@ -163,6 +174,12 @@ export function TransactionList({ transactions }: TransactionListProps) {
           </PaginationItem>
         </PaginationContent>
       </Pagination>
+
+      <TransactionDetailsModal
+        transaction={selectedTransaction}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+      />
     </div>
   );
 }

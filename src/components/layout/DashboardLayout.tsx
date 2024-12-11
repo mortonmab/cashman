@@ -1,11 +1,12 @@
-import { Banknote, BarChart, ClipboardCheck } from "lucide-react";
+import { Banknote, BarChart, ClipboardCheck, Settings } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const navigation = [
-  { name: 'Transactions', href: '/', icon: Banknote },
+  { name: 'Transactions', href: '/transactions', icon: Banknote },
   { name: 'Reconciliation', href: '/reconciliation', icon: ClipboardCheck },
   { name: 'Reports', href: '/reports', icon: BarChart },
+  { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export function DashboardLayout() {
